@@ -34,6 +34,7 @@ func main() {
 	var (
 		values []float64
 		names  []string
+		out    string
 	)
 
 	var (
@@ -45,13 +46,16 @@ func main() {
 		err       error
 	)
 
-	// ECHO RIO
 	fmt.Println("------ Benchmark ------")
 	fmt.Println("Port:", port)
 	fmt.Println("Workers:", workers)
 	fmt.Println("Count:", count)
 	fmt.Println("NBytes:", nBytes)
 
+	// ECHO
+	names = nil
+	values = nil
+	port++
 	cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
 	if err != nil {
 		fmt.Println(fmt.Errorf("ECHO-RIO benching failed: %v", err))
@@ -63,7 +67,8 @@ func main() {
 	names = append(names, "RIO")
 	values = append(values, float64(actions))
 
-	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port+1, nBytes)
+	port++
+	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
 	if err != nil {
 		fmt.Println(fmt.Errorf("ECHO-STD benching failed: %v", err))
 		return
@@ -73,8 +78,37 @@ func main() {
 
 	names = append(names, "STD")
 	values = append(values, float64(actions))
-	out := strings.Replace("out/echo.png", " ", "_", -1)
+	out = strings.Replace("out/echo.png", " ", "_", -1)
 	plotit(out, "Echo", values, names)
+
+	// HTTP
+	names = nil
+	values = nil
+	port++
+	cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
+	if err != nil {
+		fmt.Println(fmt.Errorf("ECHO-RIO benching failed: %v", err))
+		return
+	}
+	fmt.Println(fmt.Sprintf("ECHO-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
+
+	names = append(names, "RIO")
+	values = append(values, float64(actions))
+
+	port++
+	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
+	if err != nil {
+		fmt.Println(fmt.Errorf("ECHO-STD benching failed: %v", err))
+		return
+	}
+	fmt.Println(fmt.Sprintf("ECHO-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
+
+	names = append(names, "STD")
+	values = append(values, float64(actions))
+	out = strings.Replace("out/http.png", " ", "_", -1)
+	plotit(out, "Http", values, names)
 }
 
 func plotit(path, title string, values []float64, names []string) {
