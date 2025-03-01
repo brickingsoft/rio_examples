@@ -29,12 +29,6 @@ func Bench(workers int, count int, port int, nBytes int) (dur time.Duration, act
 	met := metric.New()
 	setting()
 
-	pinErr := rio.PinVortexes()
-	if pinErr != nil {
-		err = pinErr
-		return
-	}
-
 	ln, lnErr := serve(met, port, nBytes)
 	if lnErr != nil {
 		err = lnErr
@@ -48,7 +42,6 @@ func Bench(workers int, count int, port int, nBytes int) (dur time.Duration, act
 	actions, inbounds, outbounds = met.PerSecond()
 	failures = met.Failures()
 	dur = met.CostDuration()
-	_ = rio.UnpinVortexes()
 	return
 }
 

@@ -12,18 +12,10 @@ import (
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 	"math"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 )
-
-var category string
-var kind string
-var connections, commands, pipeline, seconds int
-var rate float64
-var values []float64
-var names []string
 
 func main() {
 	var (
@@ -35,9 +27,14 @@ func main() {
 
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.IntVar(&workers, "workers", 10, "workers")
-	flag.IntVar(&count, "count", 500, "count")
+	flag.IntVar(&count, "count", 2000, "count")
 	flag.IntVar(&nBytes, "nBytes", 1024, "nBytes")
 	flag.Parse()
+
+	var (
+		values []float64
+		names  []string
+	)
 
 	var (
 		cost      time.Duration
@@ -63,7 +60,10 @@ func main() {
 	fmt.Println(fmt.Sprintf("ECHO-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
 		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
+	names = append(names, "RIO")
+	values = append(values, float64(actions))
+
+	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port+1, nBytes)
 	if err != nil {
 		fmt.Println(fmt.Errorf("ECHO-STD benching failed: %v", err))
 		return
@@ -71,101 +71,10 @@ func main() {
 	fmt.Println(fmt.Sprintf("ECHO-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
 		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	//analyze()
-	//autoplot()
-}
-
-func autoplot() {
-	if category == "" {
-		return
-	}
-	var title = category
-	path := strings.Replace("out/"+category+".png", " ", "_", -1)
-
-	plotit(
-		path,
-		title,
-		values,
-		names,
-	)
-
-}
-
-func analyze() {
-	lines := readlines("out/http.txt", "out/echo.txt")
-	var err error
-	for _, line := range lines {
-		rlines := strings.Split(line, "\r")
-		line = strings.TrimSpace(rlines[len(rlines)-1])
-		if strings.HasPrefix(line, "--- ") {
-			if strings.HasSuffix(line, " START ---") {
-				autoplot()
-				category = strings.ToLower(strings.Replace(strings.Replace(line, "--- ", "", -1), " START ---", "", -1))
-				category = strings.Replace(category, "bench ", "", -1)
-				values = nil
-				names = nil
-			} else {
-				kind = strings.ToLower(strings.Replace(strings.Replace(line, "--- ", "", -1), " ---", "", -1))
-			}
-			connections, commands, pipeline, seconds = 0, 0, 0, 0
-		} else if strings.HasPrefix(line, "*** ") {
-			details := strings.Split(strings.ToLower(strings.Replace(line, "*** ", "", -1)), ", ")
-			for _, item := range details {
-				if strings.HasSuffix(item, " connections") {
-					connections, err = strconv.Atoi(strings.Split(item, " ")[0])
-					must(err)
-				} else if strings.HasSuffix(item, " commands") {
-					commands, err = strconv.Atoi(strings.Split(item, " ")[0])
-					must(err)
-				} else if strings.HasSuffix(item, " commands pipeline") {
-					pipeline, err = strconv.Atoi(strings.Split(item, " ")[0])
-					must(err)
-
-				} else if strings.HasSuffix(item, " seconds") {
-					seconds, err = strconv.Atoi(strings.Split(item, " ")[0])
-					must(err)
-				}
-			}
-		} else {
-			switch {
-			case category == "echo":
-				if strings.HasPrefix(line, "Packet rate estimate: ") {
-					rate, err = strconv.ParseFloat(strings.Split(strings.Split(line, ": ")[1], "↓,")[0], 64)
-					must(err)
-					output()
-				}
-			case category == "http":
-				if strings.HasPrefix(line, "Reqs/sec ") {
-					rate, err = strconv.ParseFloat(
-						strings.Split(strings.TrimSpace(strings.Split(line, "Reqs/sec ")[1]), " ")[0], 64)
-					must(err)
-					output()
-				}
-			}
-		}
-	}
-}
-
-func output() {
-	name := kind
-	names = append(names, name)
-	values = append(values, rate)
-	//csv += fmt.Sprintf("%s,%s,%d,%d,%d,%d,%f\n", category, kind, connections, commands, pipeline, seconds, rate)
-}
-
-func readlines(paths ...string) (lines []string) {
-	for _, path := range paths {
-		data, err := os.ReadFile(path)
-		must(err)
-		lines = append(lines, strings.Split(string(data), "\n")...)
-	}
-	return
-}
-
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
+	names = append(names, "STD")
+	values = append(values, float64(actions))
+	out := strings.Replace("out/echo.png", " ", "_", -1)
+	plotit(out, "Echo", values, names)
 }
 
 func plotit(path, title string, values []float64, names []string) {
@@ -211,12 +120,8 @@ func plotit(path, title string, values []float64, names []string) {
 	}
 }
 
-// PreciseTicks is suitable for the Tick.Marker field of an Axis, it returns a
-// set of tick marks with labels that have been rounded less agressively than
-// what DefaultTicks provides.
 type PreciseTicks struct{}
 
-// Ticks returns Ticks in a specified range
 func (PreciseTicks) Ticks(min, max float64) []plot.Tick {
 	const suggestedTicks = 3
 
@@ -240,7 +145,6 @@ func (PreciseTicks) Ticks(min, max float64) []plot.Tick {
 	}
 	majorDelta := float64(majorMult) * tens
 	val := math.Floor(min/majorDelta) * majorDelta
-	// Makes a list of non-truncated y-values.
 	var labels []float64
 	for val <= max {
 		if val >= min {
@@ -249,7 +153,6 @@ func (PreciseTicks) Ticks(min, max float64) []plot.Tick {
 		val += majorDelta
 	}
 	prec := int(math.Ceil(math.Log10(val)) - math.Floor(math.Log10(majorDelta)))
-	// Makes a list of big ticks.
 	var ticks []plot.Tick
 	for _, v := range labels {
 		vRounded := round(v, prec)
@@ -281,12 +184,10 @@ func (PreciseTicks) Ticks(min, max float64) []plot.Tick {
 
 type commaTicks struct{}
 
-// Ticks computes the default tick marks, but inserts commas
-// into the labels for the major tick marks.
 func (commaTicks) Ticks(min, max float64) []plot.Tick {
 	tks := PreciseTicks{}.Ticks(min, max)
 	for i, t := range tks {
-		if t.Label == "" { // Skip minor ticks, they are fine.
+		if t.Label == "" {
 			continue
 		}
 		tks[i].Label = addCommas(t.Label)
@@ -294,9 +195,6 @@ func (commaTicks) Ticks(min, max float64) []plot.Tick {
 	return tks
 }
 
-// AddCommas adds commas after every 3 characters from right to left.
-// NOTE: This function is a quick hack, it doesn't work with decimal
-// points, and may have a bunch of other problems.
 func addCommas(s string) string {
 	rev := ""
 	n := 0
@@ -317,20 +215,10 @@ func addCommas(s string) string {
 	return s
 }
 
-// round returns the half away from zero rounded value of x with a prec precision.
-//
-// Special cases are:
-//
-//	round(±0) = +0
-//	round(±Inf) = ±Inf
-//	round(NaN) = NaN
 func round(x float64, prec int) float64 {
 	if x == 0 {
-		// Make sure zero is returned
-		// without the negative bit set.
 		return 0
 	}
-	// Fast path for positive precision on integers.
 	if prec >= 0 && x == math.Trunc(x) {
 		return x
 	}
@@ -348,6 +236,5 @@ func round(x float64, prec int) float64 {
 	if x == 0 {
 		return 0
 	}
-
 	return x / pow
 }

@@ -9,6 +9,19 @@ import (
 )
 
 func main() {
+	/*
+		Port: 9000
+		Workers: 5
+		Count: 2000
+		NBytes: 1024
+		ECHO-RIO benching complete(1.423717741s): 8186 conn/sec, 8M inbounds/sec, 8M outbounds/sec, 0 failures
+
+		Port: 9000
+		Workers: 10
+		Count: 5000
+		NBytes: 1024
+		ECHO-RIO benching complete(975.296993ms): 8099 conn/sec, 7.9M inbounds/sec, 7.9M outbounds/sec, 0 failures
+	*/
 	var (
 		port    int
 		workers int
@@ -17,8 +30,8 @@ func main() {
 	)
 
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.IntVar(&workers, "workers", 1, "workers")
-	flag.IntVar(&count, "count", 5000, "count")
+	flag.IntVar(&workers, "workers", 50, "workers")
+	flag.IntVar(&count, "count", 2000, "count")
 	flag.IntVar(&nBytes, "nBytes", 1024, "nBytes")
 	flag.Parse()
 

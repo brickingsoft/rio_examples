@@ -1,14 +1,14 @@
-package echorio_test
+package echostd_test
 
 import (
 	"fmt"
-	echorio "github.com/brickingsoft/rio_examples/benchmark/echo-rio"
+	echostd "github.com/brickingsoft/rio_examples/benchmark/echo-std"
 	"github.com/brickingsoft/rio_examples/benchmark/metric"
 	"testing"
 )
 
 func BenchmarkECHO(b *testing.B) {
-	cost, actions, inbounds, outbounds, failures, err := echorio.Bench(1, 5000, 9000, 1024)
+	cost, actions, inbounds, outbounds, failures, err := echostd.Bench(1, 5000, 9000, 1024)
 	if err != nil {
 		b.Errorf("ECHO-RIO benching failed: %v", err)
 		return
