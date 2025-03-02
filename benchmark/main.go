@@ -26,8 +26,8 @@ func main() {
 	)
 
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.IntVar(&workers, "workers", 5, "workers")
-	flag.IntVar(&count, "count", 2000, "count")
+	flag.IntVar(&workers, "workers", 10, "workers")
+	flag.IntVar(&count, "count", 1000, "count")
 	flag.IntVar(&nBytes, "nBytes", 1024, "nBytes")
 	flag.Parse()
 

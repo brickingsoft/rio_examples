@@ -95,6 +95,7 @@ func dial(workers int, count int, port int, nBytes int) {
 				conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 				if err != nil {
 					time.Sleep(10 * time.Microsecond)
+					j--
 					continue
 				}
 				remain := len(b)

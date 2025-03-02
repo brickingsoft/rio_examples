@@ -3,7 +3,7 @@ module github.com/brickingsoft/rio_examples
 go 1.23.0
 
 require (
-	github.com/brickingsoft/rio v0.4.0
+	github.com/brickingsoft/rio v0.5.0
 	github.com/valyala/fasthttp v1.59.0
 	gonum.org/v1/plot v0.15.0
 )

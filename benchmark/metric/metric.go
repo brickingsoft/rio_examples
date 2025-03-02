@@ -52,13 +52,13 @@ func (m *Metric) CostDuration() time.Duration {
 }
 
 func (m *Metric) PerSecond() (actions uint64, inbounds uint64, outbounds uint64) {
-	sec := uint64(m.end.Sub(m.beg).Seconds())
+	sec := m.end.Sub(m.beg).Seconds()
 	if sec < 1 {
 		sec = 1
 	}
-	actions = m.actions.Load() / sec
-	inbounds = m.inbounds.Load() / sec
-	outbounds = m.outbounds.Load() / sec
+	actions = uint64(float64(m.actions.Load()) / sec)
+	inbounds = uint64(float64(m.inbounds.Load()) / sec)
+	outbounds = uint64(float64(m.outbounds.Load()) / sec)
 	return
 }
 

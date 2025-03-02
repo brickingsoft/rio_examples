@@ -10,11 +10,12 @@ import (
 
 func main() {
 	/*
+		------ Benchmark ------
 		Port: 9000
-		Workers: 5
-		Count: 2000
+		Workers: 10
+		Count: 1000
 		NBytes: 1024
-		ECHO-STD benching complete(1.280013825s): 7940 conn/sec, 7.8M inbounds/sec, 7.8M outbounds/sec, 0 failures
+		ECHO-STD benching complete(2.000461253s): 4998 conn/sec, 4.9M inbounds/sec, 4.9M outbounds/sec, 0 failures
 	*/
 	var (
 		port    int
@@ -24,8 +25,8 @@ func main() {
 	)
 
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.IntVar(&workers, "workers", 5, "workers")
-	flag.IntVar(&count, "count", 2000, "count")
+	flag.IntVar(&workers, "workers", 10, "workers")
+	flag.IntVar(&count, "count", 1000, "count")
 	flag.IntVar(&nBytes, "nBytes", 1024, "nBytes")
 	flag.Parse()
 
