@@ -94,7 +94,8 @@ func dial(workers int, count int, port int, nBytes int) {
 			for j := 0; j < count; j++ {
 				conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 				if err != nil {
-					return
+					time.Sleep(10 * time.Microsecond)
+					continue
 				}
 				remain := len(b)
 				for remain > 0 {

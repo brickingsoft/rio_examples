@@ -14,13 +14,7 @@ func main() {
 		Workers: 5
 		Count: 2000
 		NBytes: 1024
-		ECHO-RIO benching complete(1.423717741s): 8186 conn/sec, 8M inbounds/sec, 8M outbounds/sec, 0 failures
-
-		Port: 9000
-		Workers: 10
-		Count: 5000
-		NBytes: 1024
-		ECHO-RIO benching complete(975.296993ms): 8099 conn/sec, 7.9M inbounds/sec, 7.9M outbounds/sec, 0 failures
+		ECHO-RIO benching complete(1.851019125s): 8907 conn/sec, 8.7M inbounds/sec, 8.7M outbounds/sec, 0 failures
 	*/
 	var (
 		port    int

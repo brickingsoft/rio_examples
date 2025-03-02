@@ -2,5 +2,4 @@
 
 package echorio
 
-func setting() {
-}
+func setting() {}

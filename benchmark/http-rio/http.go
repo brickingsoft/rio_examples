@@ -92,7 +92,8 @@ func dial(workers int, count int, port int, nBytes int) {
 			for j := 0; j < count; j++ {
 				resp, postErr := http.Post(fmt.Sprintf("http://127.0.0.1:%d", port), "application/text", bytes.NewBuffer(b))
 				if postErr != nil {
-					return
+					time.Sleep(10 * time.Microsecond)
+					continue
 				}
 				_ = resp.Body.Close()
 			}
