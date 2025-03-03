@@ -19,16 +19,20 @@ import (
 
 func main() {
 	var (
-		port    int
-		workers int
-		count   int
-		nBytes  int
+		port      int
+		workers   int
+		count     int
+		nBytes    int
+		benchHTTP bool
+		draw      bool
 	)
 
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.IntVar(&workers, "workers", 10, "workers")
 	flag.IntVar(&count, "count", 1000, "count")
 	flag.IntVar(&nBytes, "nBytes", 1024, "nBytes")
+	flag.BoolVar(&benchHTTP, "http", false, "http")
+	flag.BoolVar(&draw, "draw", false, "draw")
 	flag.Parse()
 
 	var (
@@ -78,37 +82,44 @@ func main() {
 
 	names = append(names, "STD")
 	values = append(values, float64(actions))
-	out = strings.Replace("out/echo.png", " ", "_", -1)
-	plotit(out, "Echo", values, names)
-
-	// HTTP
-	names = nil
-	values = nil
-	port++
-	cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
-	if err != nil {
-		fmt.Println(fmt.Errorf("HTTP-RIO benching failed: %v", err))
-		return
+	if draw {
+		out = strings.Replace("out/echo.png", " ", "_", -1)
+		plotit(out, "Echo", values, names)
 	}
-	fmt.Println(fmt.Sprintf("HTTP-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
-		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	names = append(names, "RIO")
-	values = append(values, float64(actions))
+	if benchHTTP {
+		// HTTP
+		names = nil
+		values = nil
+		port++
+		cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
+		if err != nil {
+			fmt.Println(fmt.Errorf("HTTP-RIO benching failed: %v", err))
+			return
+		}
+		fmt.Println(fmt.Sprintf("HTTP-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+			cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	port++
-	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
-	if err != nil {
-		fmt.Println(fmt.Errorf("HTTP-STD benching failed: %v", err))
-		return
+		names = append(names, "RIO")
+		values = append(values, float64(actions))
+
+		port++
+		cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
+		if err != nil {
+			fmt.Println(fmt.Errorf("HTTP-STD benching failed: %v", err))
+			return
+		}
+		fmt.Println(fmt.Sprintf("HTTP-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+			cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
+
+		names = append(names, "STD")
+		values = append(values, float64(actions))
+		if draw {
+			out = strings.Replace("out/http.png", " ", "_", -1)
+			plotit(out, "Http", values, names)
+		}
 	}
-	fmt.Println(fmt.Sprintf("HTTP-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
-		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	names = append(names, "STD")
-	values = append(values, float64(actions))
-	out = strings.Replace("out/http.png", " ", "_", -1)
-	plotit(out, "Http", values, names)
 }
 
 func plotit(path, title string, values []float64, names []string) {
