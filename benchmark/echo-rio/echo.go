@@ -54,7 +54,7 @@ func serve(met *metric.Metric, port int, nBytes int) (ln net.Listener, err error
 		for {
 			conn, acceptErr := ln.Accept()
 			if acceptErr != nil {
-				return
+				break
 			}
 			met.IncACT(1)
 			go func(conn net.Conn, met *metric.Metric) {
@@ -64,10 +64,10 @@ func serve(met *metric.Metric, port int, nBytes int) (ln net.Listener, err error
 					if rErr != nil {
 						_ = conn.Close()
 						if errors.Is(rErr, io.EOF) {
-							return
+							break
 						}
 						met.Failed(1)
-						return
+						break
 					}
 					met.IncIN(rn)
 
@@ -75,7 +75,7 @@ func serve(met *metric.Metric, port int, nBytes int) (ln net.Listener, err error
 					if wErr != nil {
 						_ = conn.Close()
 						met.Failed(1)
-						return
+						break
 					}
 					met.IncOUT(wn)
 				}
