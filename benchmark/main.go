@@ -87,10 +87,10 @@ func main() {
 	port++
 	cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
 	if err != nil {
-		fmt.Println(fmt.Errorf("ECHO-RIO benching failed: %v", err))
+		fmt.Println(fmt.Errorf("HTTP-RIO benching failed: %v", err))
 		return
 	}
-	fmt.Println(fmt.Sprintf("ECHO-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+	fmt.Println(fmt.Sprintf("HTTP-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
 		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
 	names = append(names, "RIO")
@@ -99,10 +99,10 @@ func main() {
 	port++
 	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
 	if err != nil {
-		fmt.Println(fmt.Errorf("ECHO-STD benching failed: %v", err))
+		fmt.Println(fmt.Errorf("HTTP-STD benching failed: %v", err))
 		return
 	}
-	fmt.Println(fmt.Sprintf("ECHO-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+	fmt.Println(fmt.Sprintf("HTTP-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
 		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
 	names = append(names, "STD")
