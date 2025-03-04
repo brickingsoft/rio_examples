@@ -1,6 +1,6 @@
 //go:build linux
 
-package echorio
+package http_rio
 
 import "github.com/brickingsoft/rio"
 

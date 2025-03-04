@@ -27,6 +27,8 @@ func Bench(workers int, count int, port int, nBytes int) (dur time.Duration, act
 		nBytes = 1024
 	}
 
+	setting()
+
 	met := metric.New()
 
 	ln, lnErr := serve(met, port, nBytes)

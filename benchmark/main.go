@@ -56,35 +56,37 @@ func main() {
 	fmt.Println("Count:", count)
 	fmt.Println("NBytes:", nBytes)
 
-	// ECHO
-	names = nil
-	values = nil
-	port++
-	cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
-	if err != nil {
-		fmt.Println(fmt.Errorf("ECHO-RIO benching failed: %v", err))
-		return
-	}
-	fmt.Println(fmt.Sprintf("ECHO-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
-		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
+	if !benchHTTP {
+		// ECHO
+		names = nil
+		values = nil
+		port++
+		cost, actions, inbounds, outbounds, failures, err = echorio.Bench(workers, count, port, nBytes)
+		if err != nil {
+			fmt.Println(fmt.Errorf("ECHO-RIO benching failed: %v", err))
+			return
+		}
+		fmt.Println(fmt.Sprintf("ECHO-RIO benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+			cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	names = append(names, "RIO")
-	values = append(values, float64(actions))
+		names = append(names, "RIO")
+		values = append(values, float64(actions))
 
-	port++
-	cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
-	if err != nil {
-		fmt.Println(fmt.Errorf("ECHO-STD benching failed: %v", err))
-		return
-	}
-	fmt.Println(fmt.Sprintf("ECHO-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
-		cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
+		port++
+		cost, actions, inbounds, outbounds, failures, err = echostd.Bench(workers, count, port, nBytes)
+		if err != nil {
+			fmt.Println(fmt.Errorf("ECHO-STD benching failed: %v", err))
+			return
+		}
+		fmt.Println(fmt.Sprintf("ECHO-STD benching complete(%s): %d conn/sec, %s inbounds/sec, %s outbounds/sec, %d failures",
+			cost.String(), actions, metric.FormatBytes(inbounds), metric.FormatBytes(outbounds), failures))
 
-	names = append(names, "STD")
-	values = append(values, float64(actions))
-	if draw {
-		out = strings.Replace("out/echo.png", " ", "_", -1)
-		plotit(out, "Echo", values, names)
+		names = append(names, "STD")
+		values = append(values, float64(actions))
+		if draw {
+			out = strings.Replace("out/echo.png", " ", "_", -1)
+			plotit(out, "Echo", values, names)
+		}
 	}
 
 	if benchHTTP {
