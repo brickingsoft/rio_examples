@@ -13,7 +13,6 @@ func main() {
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.Parse()
 
-	rio.UseCPUAffinity(true)
 	ln, lnErr := rio.Listen("tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		log.Fatal("lnErr:", lnErr)

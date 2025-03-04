@@ -26,8 +26,6 @@ func Bench(workers int, count int, port int, nBytes int) (dur time.Duration, act
 		nBytes = 1024
 	}
 
-	setting()
-
 	ln, lnErr := serve(port, nBytes)
 	if lnErr != nil {
 		err = lnErr
