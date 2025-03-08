@@ -13,12 +13,12 @@ func main() {
 		Interface eth0 address [192.168.100.1]:0
 		Using interface eth0 to connect to [192.168.100.120]:9000
 		Ramped up to 50 connections.
-		Total data sent:     185.6 MiB (194641920 bytes)
-		Total data received: 183.8 MiB (192732708 bytes)
-		Bandwidth per channel: 6.074⇅ Mbps (759.3 kBps)
-		Aggregate bandwidth: 154.127↓, 155.654↑ Mbps
-		Packet rate estimate: 18635.1↓, 13607.3↑ (3↓, 45↑ TCP MSS/op)
-		Test duration: 10.0038 s.
+		Total data sent:     176.8 MiB (185401344 bytes)
+		Total data received: 175.4 MiB (183927028 bytes)
+		Bandwidth per channel: 5.908⇅ Mbps (738.4 kBps)
+		Aggregate bandwidth: 147.099↓, 148.278↑ Mbps
+		Packet rate estimate: 17832.6↓, 12716.7↑ (3↓, 44↑ TCP MSS/op)
+		Test duration: 10.0029 s.
 	*/
 	var port int
 	var multicore bool
