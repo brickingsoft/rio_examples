@@ -14,12 +14,12 @@ func main() {
 		Interface eth0 address [192.168.100.1]:0
 		Using interface eth0 to connect to [192.168.100.120]:9000
 		Ramped up to 50 connections.
-		Total data sent:     199.2 MiB (208928768 bytes)
-		Total data received: 197.8 MiB (207359332 bytes)
-		Bandwidth per channel: 6.654⇅ Mbps (831.7 kBps)
-		Aggregate bandwidth: 165.720↓, 166.974↑ Mbps
-		Packet rate estimate: 15161.3↓, 14565.3↑ (2↓, 45↑ TCP MSS/op)
-		Test duration: 10.0101 s.
+		Total data sent:     198.3 MiB (207945728 bytes)
+		Total data received: 196.6 MiB (206165284 bytes)
+		Bandwidth per channel: 6.623⇅ Mbps (827.9 kBps)
+		Aggregate bandwidth: 164.859↓, 166.282↑ Mbps
+		Packet rate estimate: 14937.1↓, 14506.0↑ (2↓, 45↑ TCP MSS/op)
+		Test duration: 10.0045 s.
 	*/
 	var port int
 	flag.IntVar(&port, "port", 9000, "server port")

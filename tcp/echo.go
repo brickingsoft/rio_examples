@@ -6,18 +6,31 @@ import (
 	"flag"
 	"fmt"
 	"github.com/brickingsoft/rio"
+	"github.com/brickingsoft/rio/pkg/iouring/aio"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"time"
 )
 
 func main() {
 	var port int
+	var schema string
 	flag.IntVar(&port, "port", 9000, "server port")
+	flag.StringVar(&schema, "schema", aio.PerformanceFlagsSchema, "iouring schema")
+	//flag.StringVar(&schema, "schema", aio.DefaultFlagsSchema, "iouring schema")
 	flag.Parse()
 
-	setting()
+	switch strings.ToUpper(strings.TrimSpace(schema)) {
+	case aio.PerformanceFlagsSchema:
+		os.Setenv("IOURING_SETUP_FLAGS_SCHEMA", aio.PerformanceFlagsSchema)
+		os.Setenv("IOURING_SQ_THREAD_IDLE", "1000")
+		break
+	default:
+		break
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	lnDone, lnErr := listen(ctx, fmt.Sprintf(":%d", port))
 	if lnErr != nil {

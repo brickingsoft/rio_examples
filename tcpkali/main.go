@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	values := []float64{27791.8, 22095.3, 14272.9, 15161.3}
+	values := []float64{25033.5, 18635.1, 19344.9, 14937.1}
 	names := []string{"RIO", "GNET", "EVIO", "NET(STD)"}
 
 	out := strings.Replace("out/tcpkali.png", " ", "_", -1)
