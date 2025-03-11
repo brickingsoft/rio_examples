@@ -1,12 +1,23 @@
 package main
 
 import (
+	"flag"
 	"github.com/brickingsoft/rio"
+	"github.com/brickingsoft/rio/pkg/iouring/aio"
 	"net/http"
 )
 
 func main() {
-	ln, err := rio.Listen("tcp", ":8080")
+	var port int
+	var schema string
+	flag.IntVar(&port, "port", 9000, "server port")
+	flag.StringVar(&schema, "schema", aio.DefaultFlagsSchema, "iouring schema")
+	flag.Parse()
+
+	rio.PrepareIOURingSetupOptions(
+		aio.WithFlagsSchema(schema),
+	)
+	ln, err := rio.Listen("tcp", ":9000")
 	if err != nil {
 		panic(err)
 		return
