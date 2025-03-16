@@ -13,83 +13,58 @@ import (
 )
 
 func main() {
-	/* raw
-
-	         /\      Grafana   /‾‾/
-	    /\  /  \     |\  __   /  /
-	   /  \/    \    | |/ /  /   ‾‾\
-	  /          \   |   (  |  (‾)  |
-	 / __________ \  |_|\_\  \_____/
-
-	     execution: local
-	        script: ./k6.js
-	        output: -
-
-	     scenarios: (100.00%) 1 scenario, 100 max VUs, 40s max duration (incl. graceful stop):
-	              * default: 100 looping VUs for 10s (gracefulStop: 30s)
-
-
-	     data_received..................: 94 MB  9.4 MB/s
-	     data_sent......................: 107 MB 11 MB/s
-	     http_req_blocked...............: avg=895ns   min=342ns   med=469ns    max=8.04ms  p(90)=743ns  p(95)=886ns
-	     http_req_connecting............: avg=66ns    min=0s      med=0s       max=1.29ms  p(90)=0s     p(95)=0s
-	     http_req_duration..............: avg=1.05ms  min=41.58µs med=892.7µs  max=79.41ms p(90)=1.62ms p(95)=2.25ms
-	       { expected_response:true }...: avg=1.05ms  min=41.58µs med=892.7µs  max=79.41ms p(90)=1.62ms p(95)=2.25ms
-	     http_req_failed................: 0.00%  0 out of 926061
-	     http_req_receiving.............: avg=14.13µs min=2.45µs  med=3.55µs   max=13.21ms p(90)=5.53µs p(95)=9.44µs
-	     http_req_sending...............: avg=3.61µs  min=1.06µs  med=1.39µs   max=9.94ms  p(90)=1.97µs p(95)=2.87µs
-	     http_req_tls_handshaking.......: avg=0s      min=0s      med=0s       max=0s      p(90)=0s     p(95)=0s
-	     http_req_waiting...............: avg=1.04ms  min=35.76µs med=885.8µs  max=79.12ms p(90)=1.6ms  p(95)=2.21ms
-	     http_reqs......................: 926061 92595.20398/s
-	     iteration_duration.............: avg=1.07ms  min=54.33µs med=905.31µs max=80.66ms p(90)=1.65ms p(95)=2.3ms
-	     iterations.....................: 926061 92595.20398/s
-	     vus............................: 100    min=100         max=100
-	     vus_max........................: 100    min=100         max=100
-
-
-	running (10.0s), 000/100 VUs, 926061 complete and 0 interrupted iterations
-	default ✓ [======================================] 100 VUs  10s
+	/*  wrk -t 10 -c 1000 -d 10s http://192.168.100.120:9000/
+	Running 10s test @ http://192.168.100.120:9000/
+	  10 threads and 1000 connections
+	  Thread Stats   Avg      Stdev     Max   +/- Stdev
+	    Latency    15.50ms   50.87ms 877.13ms   94.65%
+	    Req/Sec    19.61k     7.53k   48.56k    68.57%
+	  1941877 requests in 10.08s, 187.04MB read
+	Requests/sec: 192568.74
+	Transfer/sec:     18.55MB
 	*/
 
-	/*
-			--wait_count=16 --wait_timeout=500us --prepare_timeout=500ns --schema=PERFORMANACE
-
-			execution: local
-		        script: ./k6.js
-		        output: -
-
-		     scenarios: (100.00%) 1 scenario, 100 max VUs, 40s max duration (incl. graceful stop):
-		              * default: 100 looping VUs for 10s (gracefulStop: 30s)
-
-
-		     data_received..................: 103 MB  10 MB/s
-		     data_sent......................: 120 MB  12 MB/s
-		     http_req_blocked...............: avg=931ns    min=367ns    med=524ns    max=9.09ms  p(90)=985ns  p(95)=1.46µs
-		     http_req_connecting............: avg=46ns     min=0s       med=0s       max=2.12ms  p(90)=0s     p(95)=0s
-		     http_req_duration..............: avg=955.16µs min=166.5µs  med=789.98µs max=29.72ms p(90)=1.43ms p(95)=1.9ms
-		       { expected_response:true }...: avg=955.16µs min=166.5µs  med=789.98µs max=29.72ms p(90)=1.43ms p(95)=1.9ms
-		     http_req_failed................: 0.00%   0 out of 1023631
-		     http_req_receiving.............: avg=10.15µs  min=2.67µs   med=4.02µs   max=9.53ms  p(90)=8.59µs p(95)=12.74µs
-		     http_req_sending...............: avg=3.38µs   min=1.14µs   med=1.56µs   max=9.94ms  p(90)=3.55µs p(95)=5.13µs
-		     http_req_tls_handshaking.......: avg=0s       min=0s       med=0s       max=0s      p(90)=0s     p(95)=0s
-		     http_req_waiting...............: avg=941.62µs min=158.5µs  med=782.04µs max=29.7ms  p(90)=1.41ms p(95)=1.88ms
-		     http_reqs......................: 1023631 102354.98284/s
-		     iteration_duration.............: avg=973.28µs min=178.54µs med=804.27µs max=30.07ms p(90)=1.45ms p(95)=1.94ms
-		     iterations.....................: 1023631 102354.98284/s
-		     vus............................: 100     min=100          max=100
-		     vus_max........................: 100     min=100          max=100
-
+	/* net
+	Running 10s test @ http://192.168.100.120:9000/
+	  10 threads and 1000 connections
+	  Thread Stats   Avg      Stdev     Max   +/- Stdev
+	    Latency    24.91ms   84.51ms 997.16ms   94.28%
+	    Req/Sec    18.51k     5.65k   58.13k    66.36%
+	  1836687 requests in 10.09s, 222.45MB read
+	Requests/sec: 181953.24
+	Transfer/sec:     22.04MB
 	*/
+
+	/* evio
+	Running 10s test @ http://192.168.100.120:9000/
+	  10 threads and 1000 connections
+	  Thread Stats   Avg      Stdev     Max   +/- Stdev
+	    Latency    14.03ms   41.06ms 469.88ms   95.05%
+	    Req/Sec    18.75k     6.37k   54.72k    59.35%
+	  1860250 requests in 10.10s, 184.50MB read
+	Requests/sec: 184222.91
+	Transfer/sec:     18.27MB
+	*/
+
 	var port int
 	var schema string
+	var fixedFiles int
+	var autoInstall bool
+	var multiAccept bool
+	var reusePort bool
 	flag.IntVar(&port, "port", 9000, "server port")
+	flag.IntVar(&fixedFiles, "files", 9000, "fixed files")
+	flag.BoolVar(&autoInstall, "auto", false, "auto install fixed fd")
+	flag.BoolVar(&multiAccept, "ma", false, "multi-accept")
+	flag.BoolVar(&reusePort, "reuse", false, "reuse port")
 	flag.StringVar(&schema, "schema", aio.DefaultFlagsSchema, "iouring schema")
+	flag.Parse()
 
 	flag.Parse()
 
 	fmt.Println("settings:", port, schema)
 
-	rio.PrepareIOURingSetupOptions(
+	rio.Presets(
 		aio.WithFlagsSchema(schema),
 	)
 

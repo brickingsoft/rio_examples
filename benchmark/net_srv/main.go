@@ -9,18 +9,32 @@ import (
 
 func main() {
 
-	/*
-		Destination: [192.168.100.120]:9000
-		Interface eth0 address [192.168.100.1]:0
-		Using interface eth0 to connect to [192.168.100.120]:9000
-		Ramped up to 50 connections.
-		Total data sent:     198.3 MiB (207945728 bytes)
-		Total data received: 196.6 MiB (206165284 bytes)
-		Bandwidth per channel: 6.623⇅ Mbps (827.9 kBps)
-		Aggregate bandwidth: 164.859↓, 166.282↑ Mbps
-		Packet rate estimate: 14937.1↓, 14506.0↑ (2↓, 45↑ TCP MSS/op)
-		Test duration: 10.0045 s.
+	/* tcpkali --workers 1 -c 50 -T 10s -m "PING" 192.168.100.120:9000
+	Destination: [192.168.100.120]:9000
+	Interface eth0 address [192.168.100.1]:0
+	Using interface eth0 to connect to [192.168.100.120]:9000
+	Ramped up to 50 connections.
+	Total data sent:     183.4 MiB (192282624 bytes)
+	Total data received: 181.7 MiB (190500400 bytes)
+	Bandwidth per channel: 6.119⇅ Mbps (764.9 kBps)
+	Aggregate bandwidth: 152.274↓, 153.698↑ Mbps
+	Packet rate estimate: 14586.9↓, 13171.4↑ (2↓, 44↑ TCP MSS/op)
+	Test duration: 10.0083 s.
 	*/
+
+	/* tcpkali --workers 1 -c 50 -r 5k -m "PING" 192.168.100.120:9000
+	Destination: [192.168.100.120]:9000
+	Interface eth0 address [192.168.100.1]:0
+	Using interface eth0 to connect to [192.168.100.120]:9000
+	Ramped up to 50 connections.
+	Total data sent:     9.5 MiB (10011720 bytes)
+	Total data received: 9.5 MiB (10011720 bytes)
+	Bandwidth per channel: 0.320⇅ Mbps (40.0 kBps)
+	Aggregate bandwidth: 8.009↓, 8.009↑ Mbps
+	Packet rate estimate: 28394.5↓, 28431.6↑ (1↓, 1↑ TCP MSS/op)
+	Test duration: 10.0008 s.
+	*/
+
 	var port int
 	flag.IntVar(&port, "port", 9000, "server port")
 	flag.Parse()

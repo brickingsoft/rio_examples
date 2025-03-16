@@ -6,9 +6,21 @@ import (
 )
 
 func main() {
-	values := []float64{35599.0, 18568.5, 17832.6, 14937.1}
-	names := []string{"RIO(DEFAULT)", "EVIO", "GNET", "NET"}
+	var (
+		values []float64
+		names  []string
+		out    string
+	)
 
-	out := strings.Replace("out/bench_echo.png", " ", "_", -1)
-	images.Plotit(out, "Echo", values, names)
+	values = []float64{24043.6, 19010.4, 18598.8, 14586.9}
+	names = []string{"RIO", "EVIO", "GNET", "NET"}
+
+	out = strings.Replace("benchmark/out/bench_c50t10s.png", " ", "_", -1)
+	images.Plotit(out, "Echo(C50 T10s)", values, names)
+
+	values = []float64{44138.9, 29327.7, 28936.6, 28394.5}
+	names = []string{"RIO", "EVIO", "GNET", "NET"}
+
+	out = strings.Replace("benchmark/out/bench_c50r5k.png", " ", "_", -1)
+	images.Plotit(out, "Echo(C50 R5K)", values, names)
 }

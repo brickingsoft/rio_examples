@@ -1,12 +1,18 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"github.com/brickingsoft/rio"
 	"github.com/valyala/fasthttp"
 )
 
 func main() {
-	ln, err := rio.Listen("tcp", ":9000")
+	var port int
+	flag.IntVar(&port, "port", 9000, "server port")
+	flag.Parse()
+
+	ln, err := rio.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		panic(err)
 		return

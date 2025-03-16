@@ -6,30 +6,16 @@ import (
 	"flag"
 	"fmt"
 	"github.com/brickingsoft/rio"
-	"github.com/brickingsoft/rio/pkg/iouring/aio"
 	"io"
 	"net"
-	"os"
 	"strings"
 	"time"
 )
 
 func main() {
 	var port int
-	var schema string
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.StringVar(&schema, "schema", aio.PerformanceFlagsSchema, "iouring schema")
-	//flag.StringVar(&schema, "schema", aio.DefaultFlagsSchema, "iouring schema")
 	flag.Parse()
-
-	switch strings.ToUpper(strings.TrimSpace(schema)) {
-	case aio.PerformanceFlagsSchema:
-		os.Setenv("IOURING_SETUP_FLAGS_SCHEMA", aio.PerformanceFlagsSchema)
-		os.Setenv("IOURING_SQ_THREAD_IDLE", "1000")
-		break
-	default:
-		break
-	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	lnDone, lnErr := listen(ctx, fmt.Sprintf(":%d", port))
@@ -55,7 +41,6 @@ func listen(ctx context.Context, address string) (done <-chan struct{}, err erro
 	stopCh := make(chan struct{}, 1)
 	done = stopCh
 	go func(ctx context.Context, ln net.Listener, stopCh chan struct{}) {
-		tcpLn := ln.(*rio.TCPListener)
 		stopped := false
 		for {
 			select {
@@ -63,7 +48,6 @@ func listen(ctx context.Context, address string) (done <-chan struct{}, err erro
 				stopped = true
 				break
 			default:
-				_ = tcpLn.SetDeadline(time.Now().Add(1 * time.Second))
 				conn, acceptErr := ln.Accept()
 				if acceptErr != nil {
 					if errors.Is(acceptErr, context.DeadlineExceeded) || strings.Contains(acceptErr.Error(), "timeout") {
