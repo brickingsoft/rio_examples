@@ -58,6 +58,12 @@ func (m *Metric) Title() string {
 	return m.title
 }
 
+func (m *Metric) Rate() float64 {
+	d := m.Duration()
+	rp := float64(m.TotalReceived()) / d.Seconds()
+	return rp
+}
+
 func (m *Metric) String() string {
 	buf := bytes.NewBufferString("")
 	buf.WriteString("------" + m.title + "------\n")

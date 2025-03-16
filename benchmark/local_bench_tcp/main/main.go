@@ -1,75 +1,78 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/brickingsoft/rio"
 	"github.com/brickingsoft/rio_examples/benchmark/local_bench_tcp"
+	"github.com/brickingsoft/rio_examples/images"
+	"github.com/panjf2000/gnet/v2"
+	"github.com/tidwall/evio"
 	"io"
+	"log"
 	"net"
 	"time"
 )
 
 func main() {
-	rm, rmErr := local_bench_tcp.Bench2("ECHO", 9001, 50, 10*time.Second, serveRIO)
-	if rmErr != nil {
-		fmt.Println("err:", rmErr)
-		return
+	/* print
+	------net------
+	Total data sent: 1.7M (1807572 bytes)
+	Total data received: 1.7M (1807572 bytes)
+	sent/sec: 180707.27
+	recv/sec: 180707.27
+
+	------gnet------
+	Total data sent: 1.8M (1883164 bytes)
+	Total data received: 1.8M (1883164 bytes)
+	sent/sec: 188224.41
+	recv/sec: 188224.41
+
+	------evio------
+	Total data sent: 1.7M (1797752 bytes)
+	Total data received: 1.7M (1797752 bytes)
+	sent/sec: 179709.45
+	recv/sec: 179709.45
+
+	------rio------
+	Total data sent: 6.6M (6950212 bytes)
+	Total data received: 6.6M (6950212 bytes)
+	sent/sec: 694868.01
+	recv/sec: 694868.01
+	*/
+
+	rio.Pin()
+	defer rio.Unpin()
+
+	var (
+		values = make([]float64, 0, 1)
+		names  = make([]string, 0, 1)
+		out    = "benchmark/out/bench_local.png"
+	)
+
+	srvs := []local_bench_tcp.Serve{
+		serveNet,
+		serveGnet,
+		serveEvio,
+		serveRIO,
 	}
-	fmt.Println(rm)
+	port := 9000
+	for _, srv := range srvs {
+		port++
+		rm, rmErr := local_bench_tcp.Bench(port, 50, 10*time.Second, srv)
+		if rmErr != nil {
+			fmt.Println("err:", rmErr)
+			return
+		}
+		fmt.Println(rm)
+		values = append(values, rm.Rate())
+		names = append(names, rm.Title())
+	}
+
+	images.Plotit(out, "Echo(C50 T10s)", values, names)
 }
 
-func main2() {
-	var address string
-	var count int
-	var dur string
-	flag.StringVar(&address, "port", "192.168.100.120:9000", "server address")
-	flag.IntVar(&count, "count", 50, "connection count")
-	flag.StringVar(&dur, "time", "10s", "time duration")
-	flag.Parse()
-
-	d, dErr := time.ParseDuration(dur)
-	if dErr != nil {
-		d = time.Second * 10
-	}
-
-	rm, rmErr := local_bench_tcp.Bench("ECHO", address, count, d)
-	if rmErr != nil {
-		fmt.Println("err:", rmErr)
-		return
-	}
-	fmt.Println(rm)
-
-	/* rio
-	Total data sent: 5.3M (5605276 bytes)
-	Total data received: 5.3M (5605276 bytes)
-	sent/sec: 560314.05
-	recv/sec: 560314.05
-	*/
-
-	/* EVIO
-	Total data sent: 6.3M (6577604 bytes)
-	Total data received: 6.3M (6577604 bytes)
-	sent/sec: 656747.28
-	recv/sec: 656747.28
-	*/
-
-	/* GNET
-	Total data sent: 6.7M (7015848 bytes)
-	Total data received: 6.7M (7015848 bytes)
-	sent/sec: 701354.37
-	recv/sec: 701354.37
-	*/
-
-	//nm, nmErr := local_bench_tcp.Bench("NET", address, count, d)
-	//if nmErr != nil {
-	//	fmt.Println("NET err:", nmErr)
-	//	return
-	//}
-	//fmt.Println(nm)
-}
-
-func serveRIO(port int) (closer io.Closer, err error) {
+func serveRIO(port int) (title string, closer io.Closer, err error) {
+	title = "rio"
 	ln, lnErr := rio.Listen("tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		err = lnErr
@@ -102,7 +105,8 @@ func serveRIO(port int) (closer io.Closer, err error) {
 	return
 }
 
-func serveNet(port int) (closer io.Closer, err error) {
+func serveNet(port int) (title string, closer io.Closer, err error) {
+	title = "net"
 	ln, lnErr := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		err = lnErr
@@ -133,5 +137,83 @@ func serveNet(port int) (closer io.Closer, err error) {
 			}(conn)
 		}
 	}(ln)
+	return
+}
+
+type emptyCloser struct{}
+
+func (e emptyCloser) Close() error {
+	return nil
+}
+
+func serveEvio(port int) (title string, closer io.Closer, err error) {
+	go func(port int) {
+		var events evio.Events
+		events.NumLoops = 1
+		events.Serving = func(srv evio.Server) (action evio.Action) {
+			return
+		}
+		events.Data = func(c evio.Conn, in []byte) (out []byte, action evio.Action) {
+			out = in
+			return
+		}
+
+		scheme := "tcp"
+		log.Fatal(evio.Serve(events, fmt.Sprintf("%s://:%d?reuseport=%t", scheme, port, false)))
+	}(port)
+	title = "evio"
+	closer = emptyCloser{}
+	time.Sleep(50 * time.Millisecond)
+	return
+}
+
+func serveGnet(port int) (title string, closer io.Closer, err error) {
+	go func(port int) {
+		echo := &gnetServer{addr: fmt.Sprintf("tcp://:%d", port), multicore: true}
+		log.Fatal(gnet.Run(echo, echo.addr, gnet.WithMulticore(true), gnet.WithLogger(&gnetLogger{})))
+	}(port)
+	title = "gnet"
+	closer = emptyCloser{}
+	time.Sleep(50 * time.Millisecond)
+	return
+}
+
+type gnetServer struct {
+	gnet.BuiltinEventEngine
+	eng       gnet.Engine
+	addr      string
+	multicore bool
+}
+
+func (es *gnetServer) OnBoot(eng gnet.Engine) gnet.Action {
+	es.eng = eng
+	return gnet.None
+}
+
+func (es *gnetServer) OnTraffic(c gnet.Conn) gnet.Action {
+	buf, _ := c.Next(-1)
+	c.Write(buf)
+	return gnet.None
+}
+
+type gnetLogger struct{}
+
+func (g *gnetLogger) Debugf(format string, args ...any) {
+	return
+}
+
+func (g *gnetLogger) Infof(format string, args ...any) {
+	return
+}
+
+func (g *gnetLogger) Warnf(format string, args ...any) {
+	return
+}
+
+func (g *gnetLogger) Errorf(format string, args ...any) {
+	return
+}
+
+func (g *gnetLogger) Fatalf(format string, args ...any) {
 	return
 }
