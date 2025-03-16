@@ -16,28 +16,28 @@ import (
 func main() {
 	/* print
 	------net------
-	Total data sent: 1.7M (1807572 bytes)
-	Total data received: 1.7M (1807572 bytes)
-	sent/sec: 180707.27
-	recv/sec: 180707.27
+	Total data sent: 1.7M (1810716 bytes)
+	Total data received: 1.7M (1810716 bytes)
+	sent/sec: 181012.34
+	recv/sec: 181012.34
 
 	------gnet------
-	Total data sent: 1.8M (1883164 bytes)
-	Total data received: 1.8M (1883164 bytes)
-	sent/sec: 188224.41
-	recv/sec: 188224.41
+	Total data sent: 1.8M (1881508 bytes)
+	Total data received: 1.8M (1881508 bytes)
+	sent/sec: 188089.11
+	recv/sec: 188089.11
 
 	------evio------
-	Total data sent: 1.7M (1797752 bytes)
-	Total data received: 1.7M (1797752 bytes)
-	sent/sec: 179709.45
-	recv/sec: 179709.45
+	Total data sent: 1.7M (1812800 bytes)
+	Total data received: 1.7M (1812800 bytes)
+	sent/sec: 181237.95
+	recv/sec: 181237.95
 
 	------rio------
-	Total data sent: 6.6M (6950212 bytes)
-	Total data received: 6.6M (6950212 bytes)
-	sent/sec: 694868.01
-	recv/sec: 694868.01
+	Total data sent: 6.6M (6870628 bytes)
+	Total data received: 6.6M (6870628 bytes)
+	sent/sec: 686911.79
+	recv/sec: 686911.79
 	*/
 
 	rio.Pin()
@@ -68,7 +68,7 @@ func main() {
 		names = append(names, rm.Title())
 	}
 
-	images.Plotit(out, "Echo(C50 T10s)", values, names)
+	images.Plotit(out, "Local Echo(C50 T10s)", values, names)
 }
 
 func serveRIO(port int) (title string, closer io.Closer, err error) {
