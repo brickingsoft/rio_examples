@@ -2,7 +2,7 @@
 
 ## Required tools
 
-- [tcpkali](https://github.com/machinezone/tcpkali) 
+- [tcpkali](https://github.com/ssinyagin/tcpkali-debian) 
 
 ## Usage 
 
