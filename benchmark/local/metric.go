@@ -1,4 +1,4 @@
-package local_bench_tcp
+package local
 
 import (
 	"bytes"

@@ -45,7 +45,7 @@ func main() {
 	var multiAccept bool
 	var reusePort bool
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.IntVar(&fixedFiles, "files", 9000, "fixed files")
+	flag.IntVar(&fixedFiles, "files", 1024, "fixed files")
 	flag.BoolVar(&autoInstall, "auto", false, "auto install fixed fd")
 	flag.BoolVar(&multiAccept, "ma", false, "multi-accept")
 	flag.BoolVar(&reusePort, "reuse", false, "reuse port")

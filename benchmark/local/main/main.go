@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/brickingsoft/rio"
-	"github.com/brickingsoft/rio_examples/benchmark/local_bench_tcp"
+	"github.com/brickingsoft/rio_examples/benchmark/local"
 	"github.com/brickingsoft/rio_examples/images"
 	"github.com/panjf2000/gnet/v2"
 	"github.com/tidwall/evio"
@@ -15,33 +15,30 @@ import (
 
 func main() {
 	/* print
-	------net------
-	Total data sent: 1.7M (1810716 bytes)
-	Total data received: 1.7M (1810716 bytes)
-	sent/sec: 181012.34
-	recv/sec: 181012.34
-
-	------gnet------
-	Total data sent: 1.8M (1881508 bytes)
-	Total data received: 1.8M (1881508 bytes)
-	sent/sec: 188089.11
-	recv/sec: 188089.11
+	------rio------
+	Total data sent: 6.3M (6567420 bytes)
+	Total data received: 6.3M (6567420 bytes)
+	sent/sec: 656491.65
+	recv/sec: 656491.65
 
 	------evio------
-	Total data sent: 1.7M (1812800 bytes)
-	Total data received: 1.7M (1812800 bytes)
-	sent/sec: 181237.95
-	recv/sec: 181237.95
+	Total data sent: 3.5M (3653412 bytes)
+	Total data received: 3.5M (3653412 bytes)
+	sent/sec: 365104.66
+	recv/sec: 365104.66
 
-	------rio------
-	Total data sent: 6.6M (6870628 bytes)
-	Total data received: 6.6M (6870628 bytes)
-	sent/sec: 686911.79
-	recv/sec: 686911.79
+	------gnet------
+	Total data sent: 3.3M (3444840 bytes)
+	Total data received: 3.3M (3444840 bytes)
+	sent/sec: 344434.05
+	recv/sec: 344434.05
+
+	------net------
+	Total data sent: 3.4M (3566616 bytes)
+	Total data received: 3.4M (3566616 bytes)
+	sent/sec: 356598.42
+	recv/sec: 356598.42
 	*/
-
-	rio.Pin()
-	defer rio.Unpin()
 
 	var (
 		values = make([]float64, 0, 1)
@@ -49,16 +46,22 @@ func main() {
 		out    = "benchmark/out/bench_local.png"
 	)
 
-	srvs := []local_bench_tcp.Serve{
-		serveNet,
-		serveGnet,
-		serveEvio,
+	srvs := []local.Serve{
 		serveRIO,
+		serveEvio,
+		serveGnet,
+		serveNet,
+	}
+	dialers := []local.Dialer{
+		local.RioDialer,
+		local.NetDialer,
+		local.NetDialer,
+		local.NetDialer,
 	}
 	port := 9000
-	for _, srv := range srvs {
+	for i, srv := range srvs {
 		port++
-		rm, rmErr := local_bench_tcp.Bench(port, 50, 10*time.Second, srv)
+		rm, rmErr := local.Bench(port, 50, 10*time.Second, srv, dialers[i])
 		if rmErr != nil {
 			fmt.Println("err:", rmErr)
 			return

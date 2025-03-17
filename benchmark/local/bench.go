@@ -1,16 +1,24 @@
-package local_bench_tcp
+package local
 
 import (
 	"fmt"
 	"github.com/brickingsoft/rio"
 	"io"
+	"net"
 	"sync"
 	"time"
 )
 
 type Serve func(port int) (title string, closer io.Closer, err error)
 
-func Bench(port int, count int, dur time.Duration, srvFn Serve) (met *Metric, err error) {
+type Dialer func(network string, address string) (conn net.Conn, err error)
+
+var (
+	RioDialer Dialer = rio.Dial
+	NetDialer Dialer = net.Dial
+)
+
+func Bench(port int, count int, dur time.Duration, srvFn Serve, dialer Dialer) (met *Metric, err error) {
 	title, srv, srvErr := srvFn(port)
 	if srvErr != nil {
 		return nil, srvErr
@@ -24,7 +32,7 @@ func Bench(port int, count int, dur time.Duration, srvFn Serve) (met *Metric, er
 	for i := 0; i < count; i++ {
 		go func(wg *sync.WaitGroup, port int, dur time.Duration, met *Metric) {
 			defer wg.Done()
-			conn, connErr := rio.Dial("tcp", fmt.Sprintf(":%d", port))
+			conn, connErr := dialer("tcp", fmt.Sprintf(":%d", port))
 			if connErr != nil {
 				fmt.Println("conn err:", connErr)
 				return
