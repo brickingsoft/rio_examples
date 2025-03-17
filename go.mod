@@ -11,6 +11,9 @@ require (
 	gonum.org/v1/plot v0.15.0
 )
 
+replace (
+	github.com/brickingsoft/rio v1.5.6 => ../rio
+)
 
 require (
 	git.sr.ht/~sbinet/gg v0.6.0 // indirect

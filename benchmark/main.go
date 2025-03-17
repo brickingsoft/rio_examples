@@ -1,26 +1,77 @@
 package main
 
 import (
-	"github.com/brickingsoft/rio_examples/images"
+	"flag"
+	"fmt"
+	"github.com/brickingsoft/rio_examples/benchmark/kali"
+	"github.com/brickingsoft/rio_examples/benchmark/local"
 	"strings"
+	"time"
 )
 
 func main() {
 	var (
-		values []float64
-		names  []string
-		out    string
+		host    string
+		port    int
+		mode    string
+		count   int
+		dur     string
+		msg     string
+		msgSize int
+		repeat  int
+		out     string
 	)
+	flag.StringVar(&host, "host", "192.168.100.120", "host for tcpkali mode")
+	flag.IntVar(&port, "port", 9000, "server base port")
+	flag.StringVar(&mode, "mode", "tcpkali", "local: bench local case, tcpkali: use tcpkali to bench, server: run tcp server")
+	flag.IntVar(&count, "count", 50, "connection count, max is 500")
+	flag.StringVar(&dur, "time", "10s", "time duration")
+	flag.IntVar(&repeat, "repeat", 0, "repeat per connection")
+	flag.StringVar(&out, "out", "", "result output dir")
+	flag.IntVar(&msgSize, "msg_size", 0, "message size")
+	flag.StringVar(&msg, "msg", "", "message")
+	flag.Parse()
 
-	values = []float64{24043.6, 19010.4, 18598.8, 14586.9}
-	names = []string{"RIO", "EVIO", "GNET", "NET"}
+	if port <= 0 || port > 65535 {
+		port = 9000
+	}
+	if out == "" {
+		out = "./benchmark/out"
+	}
+	msg = strings.TrimSpace(msg)
+	if msg == "" && msgSize == 0 {
+		msg = "PING"
+	} else if msg == "" && msgSize > 0 {
+		msg = strings.Repeat("A", msgSize)
+	}
+	if count > 500 {
+		count = 50
+		fmt.Println("connection count too big, use 50")
+	}
 
-	out = strings.Replace("benchmark/out/bench_c50t10s.png", " ", "_", -1)
-	images.Plotit(out, "Echo(C50 T10s)", values, names)
-
-	values = []float64{44138.9, 29327.7, 28936.6, 28394.5}
-	names = []string{"RIO", "EVIO", "GNET", "NET"}
-
-	out = strings.Replace("benchmark/out/bench_c50r5k.png", " ", "_", -1)
-	images.Plotit(out, "Echo(C50 R5K)", values, names)
+	mode = strings.ToLower(strings.TrimSpace(mode))
+	switch mode {
+	case "tcpkali":
+		kali.Bench(host, port, count, repeat, dur, msg, out)
+		break
+	case "server":
+		kali.Serve(port)
+		break
+	default:
+		dur = strings.ToLower(strings.TrimSpace(dur))
+		if dur == "" {
+			dur = "10s"
+		}
+		d, dErr := time.ParseDuration(dur)
+		if dErr != nil {
+			fmt.Println("parse time failed:", dErr)
+			fmt.Println("use 10s.")
+		}
+		if d < 1 {
+			d = 10 * time.Second
+			fmt.Println("dur is too small, use 10s.")
+		}
+		local.Bench(port, count, d, msg, out)
+		break
+	}
 }

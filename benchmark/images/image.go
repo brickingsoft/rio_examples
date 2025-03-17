@@ -12,47 +12,70 @@ import (
 	"strings"
 )
 
-func Plotit(path, title string, values []float64, names []string) {
+type Request struct {
+	Path  string
+	Title string
+	Label string // "req/s"
+	Items []Item
+}
+
+type Item struct {
+	Name  string
+	Value float64
+}
+
+func Draw(req Request) error {
 	plot.DefaultFont = font.Font{
 		Typeface: "Helvetica",
 		Variant:  "Serif",
 	}
 	var groups []plotter.Values
-	for _, value := range values {
-		groups = append(groups, plotter.Values{value})
+	for _, item := range req.Items {
+		groups = append(groups, plotter.Values{item.Value})
 	}
 	p := plot.New()
-	p.Title.Text = title
+	p.Title.Text = req.Title
 	p.Y.Tick.Marker = commaTicks{}
-	p.Y.Label.Text = "Req/s"
+	p.Y.Label.Text = req.Label
 	bw := 25.0
 	w := vg.Points(bw)
 	var bars []plot.Plotter
 	var barsp []*plotter.BarChart
-	for i := 0; i < len(values); i++ {
+	for i := 0; i < len(req.Items); i++ {
 		bar, err := plotter.NewBarChart(groups[i], w)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		bar.LineStyle.Width = vg.Length(0)
 		bar.Color = plotutil.Color(i)
 		bar.Offset = vg.Length(
 			(float64(w) * float64(i)) -
-				(float64(w)*float64(len(values)))/2)
+				(float64(w)*float64(len(req.Items)))/2)
 		bars = append(bars, bar)
 		barsp = append(barsp, bar)
 	}
 	p.Add(bars...)
-	for i, name := range names {
-		p.Legend.Add(fmt.Sprintf("%s (%.0f req/s)", name, values[i]), barsp[i])
+
+	// get max
+	maxValue := req.Items[0].Value
+	for i := 1; i < len(req.Items); i++ {
+		target := req.Items[i].Value
+		if target > maxValue {
+			maxValue = target
+		}
+	}
+	for i, item := range req.Items {
+		x := (item.Value / maxValue) * 100
+		p.Legend.Add(fmt.Sprintf("%s (%.0f %%) (%.0f req/s)", item.Name, x, item.Value), barsp[i])
 	}
 
 	p.Legend.Top = true
 	p.NominalX("")
 
-	if err := p.Save(7*vg.Inch, 3*vg.Inch, path); err != nil {
-		panic(err)
+	if err := p.Save(7*vg.Inch, 3*vg.Inch, req.Path); err != nil {
+		return err
 	}
+	return nil
 }
 
 type PreciseTicks struct{}

@@ -15,13 +15,14 @@ func NewMetric(title string) *Metric {
 }
 
 type Metric struct {
-	title string
-	rn    atomic.Uint64
-	in    atomic.Uint64
-	wn    atomic.Uint64
-	out   atomic.Uint64
-	beg   time.Time
-	end   time.Time
+	title  string
+	failed atomic.Uint64
+	rn     atomic.Uint64
+	in     atomic.Uint64
+	wn     atomic.Uint64
+	out    atomic.Uint64
+	beg    time.Time
+	end    time.Time
 }
 
 func (m *Metric) Begin() {
@@ -42,6 +43,10 @@ func (m *Metric) IncrOut(n int) {
 	m.wn.Add(1)
 }
 
+func (m *Metric) IncrFailed() {
+	m.failed.Add(1)
+}
+
 func (m *Metric) TotalSent() uint64 {
 	return m.out.Load()
 }
@@ -52,6 +57,10 @@ func (m *Metric) TotalReceived() uint64 {
 
 func (m *Metric) Duration() time.Duration {
 	return m.end.Sub(m.beg)
+}
+
+func (m *Metric) Failed() uint64 {
+	return m.failed.Load()
 }
 
 func (m *Metric) Title() string {
@@ -76,5 +85,6 @@ func (m *Metric) String() string {
 
 	buf.WriteString(fmt.Sprintf("sent/sec: %.2f\n", sp))
 	buf.WriteString(fmt.Sprintf("recv/sec: %.2f\n", rp))
+	buf.WriteString(fmt.Sprintf("duration: %s\n", d))
 	return buf.String()
 }

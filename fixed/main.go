@@ -14,27 +14,14 @@ import (
 
 func main() {
 	var port int
-	var flagsSchema string
-	var autoInstallFixedFd bool
-	var multishotAccept bool
-	var reusePort bool
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.StringVar(&flagsSchema, "schema", aio.DefaultFlagsSchema, "iouring schema")
-	flag.BoolVar(&autoInstallFixedFd, "auto", false, "auto install fixed fd")
-	flag.BoolVar(&multishotAccept, "ma", false, "multi-accept")
-	flag.BoolVar(&reusePort, "reuse", false, "reuse port")
 	flag.Parse()
 
-	rio.Presets(aio.WithFlagsSchema(flagsSchema))
+	rio.Presets(aio.WithRegisterFixedBuffer(4096, 10))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	config := rio.ListenConfig{
-		ReusePort:          reusePort,
-		SendZC:             false,
-		MultishotAccept:    multishotAccept,
-		AutoFixedFdInstall: autoInstallFixedFd,
-	}
+	config := rio.ListenConfig{}
 	ln, lnErr := config.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		fmt.Println("lnErr:", lnErr)
@@ -60,9 +47,19 @@ func listen(ln net.Listener) {
 			fmt.Println("accept err:", err)
 			return
 		}
-		b := make([]byte, 1024)
-		rn, readErr := conn.Read(b)
+		fixed, ok := rio.ConvertToFixedReaderWriter(conn)
+		if !ok {
+			fmt.Println("convert to fixed ReaderWriter")
+			return
+		}
+		buf := fixed.AcquireRegisteredBuffer()
+		if buf == nil {
+			fmt.Println("no registered buffer")
+			return
+		}
+		rn, readErr := fixed.ReadFixed(buf)
 		if readErr != nil {
+			fixed.ReleaseRegisteredBuffer(buf)
 			_ = conn.Close()
 			if errors.Is(readErr, io.EOF) {
 				break
@@ -70,14 +67,20 @@ func listen(ln net.Listener) {
 			fmt.Println("Srv read error:", readErr)
 			break
 		}
-		fmt.Println("Srv read:", rn, string(b[:rn]))
+		b, _ := io.ReadAll(buf)
+		fmt.Println("Srv read:", rn, string(b))
 
-		wn, writeErr := conn.Write(b[:rn])
+		buf.Reset()
+
+		_, _ = buf.Write(b)
+
+		wn, writeErr := fixed.WriteFixed(buf)
 		if writeErr != nil {
 			fmt.Println("Srv write error:", writeErr)
 		} else {
 			fmt.Println("Srv write:", wn)
 		}
+		fixed.ReleaseRegisteredBuffer(buf)
 		_ = conn.Close()
 	}
 	return
