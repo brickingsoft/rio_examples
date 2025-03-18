@@ -67,7 +67,7 @@ func Bench(port int, count int, dur time.Duration, msg string, out string) {
 	// write image
 	req := images.Request{
 		Path:  filepath.Join(out, "benchmark_local.png"),
-		Title: "Benchmark(local)",
+		Title: "Benchmark(LOCAL)",
 		Label: "req/s",
 		Items: make([]images.Item, 0, 1),
 	}
@@ -99,14 +99,15 @@ func (c Cause) bench(port int, count int, dur time.Duration, msg string) (met *M
 	c.Serve(port)
 	time.Sleep(50 * time.Millisecond)
 
-	met = NewMetric(c.Name)
+	host := "127.0.0.1"
+	met = NewMetric(c.Name, len(msg))
 	wg := new(sync.WaitGroup)
 	wg.Add(count)
 	met.Begin()
 	for i := 0; i < count; i++ {
-		go func(wg *sync.WaitGroup, port int, dur time.Duration, msg string, met *Metric) {
+		go func(wg *sync.WaitGroup, host string, port int, dur time.Duration, msg string, met *Metric) {
 			defer wg.Done()
-			conn, connErr := c.Dial("tcp", fmt.Sprintf(":%d", port))
+			conn, connErr := c.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
 			if connErr != nil {
 				met.IncrFailed()
 				return
@@ -147,7 +148,7 @@ func (c Cause) bench(port int, count int, dur time.Duration, msg string) (met *M
 				}
 			}
 			_ = conn.Close()
-		}(wg, port, dur, msg, met)
+		}(wg, host, port, dur, msg, met)
 	}
 	wg.Wait()
 	met.End()

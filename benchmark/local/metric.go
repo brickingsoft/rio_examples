@@ -8,21 +8,30 @@ import (
 	"time"
 )
 
-func NewMetric(title string) *Metric {
+func NewMetric(title string, msgSize int) *Metric {
 	return &Metric{
-		title: title,
+		title:   title,
+		msgSize: float64(msgSize),
+		failed:  atomic.Uint64{},
+		rn:      atomic.Uint64{},
+		in:      atomic.Uint64{},
+		wn:      atomic.Uint64{},
+		out:     atomic.Uint64{},
+		beg:     time.Time{},
+		end:     time.Time{},
 	}
 }
 
 type Metric struct {
-	title  string
-	failed atomic.Uint64
-	rn     atomic.Uint64
-	in     atomic.Uint64
-	wn     atomic.Uint64
-	out    atomic.Uint64
-	beg    time.Time
-	end    time.Time
+	title   string
+	msgSize float64
+	failed  atomic.Uint64
+	rn      atomic.Uint64
+	in      atomic.Uint64
+	wn      atomic.Uint64
+	out     atomic.Uint64
+	beg     time.Time
+	end     time.Time
 }
 
 func (m *Metric) Begin() {
@@ -69,7 +78,7 @@ func (m *Metric) Title() string {
 
 func (m *Metric) Rate() float64 {
 	d := m.Duration()
-	rp := float64(m.TotalReceived()) / d.Seconds()
+	rp := float64(m.TotalReceived()) / d.Seconds() / m.msgSize
 	return rp
 }
 
@@ -80,8 +89,8 @@ func (m *Metric) String() string {
 	buf.WriteString(fmt.Sprintf("Total data received: %s (%d bytes)\n", commons.FormatBytes(m.TotalReceived()), m.TotalReceived()))
 
 	d := m.Duration()
-	sp := float64(m.TotalSent()) / d.Seconds()
-	rp := float64(m.TotalReceived()) / d.Seconds()
+	sp := float64(m.TotalSent()) / d.Seconds() / m.msgSize
+	rp := float64(m.TotalReceived()) / d.Seconds() / m.msgSize
 
 	buf.WriteString(fmt.Sprintf("sent/sec: %.2f\n", sp))
 	buf.WriteString(fmt.Sprintf("recv/sec: %.2f\n", rp))

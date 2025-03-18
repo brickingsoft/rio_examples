@@ -23,7 +23,7 @@ func main() {
 	)
 	flag.StringVar(&host, "host", "192.168.100.120", "host for tcpkali mode")
 	flag.IntVar(&port, "port", 9000, "server base port")
-	flag.StringVar(&mode, "mode", "tcpkali", "local: bench local case, tcpkali: use tcpkali to bench, server: run tcp server")
+	flag.StringVar(&mode, "mode", "", "local: bench local case, tcpkali: use tcpkali to bench, server: run tcp server")
 	flag.IntVar(&count, "count", 50, "connection count, max is 500")
 	flag.StringVar(&dur, "time", "10s", "time duration")
 	flag.IntVar(&repeat, "repeat", 0, "repeat per connection")
@@ -32,6 +32,7 @@ func main() {
 	flag.StringVar(&msg, "msg", "", "message")
 	flag.Parse()
 
+	host = strings.TrimSpace(host)
 	if port <= 0 || port > 65535 {
 		port = 9000
 	}
@@ -71,6 +72,7 @@ func main() {
 			d = 10 * time.Second
 			fmt.Println("dur is too small, use 10s.")
 		}
+
 		local.Bench(port, count, d, msg, out)
 		break
 	}
