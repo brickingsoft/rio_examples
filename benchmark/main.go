@@ -23,7 +23,7 @@ func main() {
 	)
 	flag.StringVar(&host, "host", "192.168.100.120", "host for tcpkali mode")
 	flag.IntVar(&port, "port", 9000, "server base port")
-	flag.StringVar(&mode, "mode", "", "local: bench local case, tcpkali: use tcpkali to bench, server: run tcp server")
+	flag.StringVar(&mode, "mode", "tcpkali", "local: bench local case, tcpkali: use tcpkali to bench, server: run tcp server")
 	flag.IntVar(&count, "count", 50, "connection count, max is 500")
 	flag.StringVar(&dur, "time", "10s", "time duration")
 	flag.IntVar(&repeat, "repeat", 0, "repeat per connection")

@@ -73,6 +73,8 @@ func Bench(host string, port int, count int, repeat int, dur string, msg string,
 		cmd.Stdout = outBuf
 		fmt.Println("["+server.Name+"]", "["+kind+"]", "[BED]")
 		err := cmd.Run()
+		txt := outBuf.Bytes()
+		fmt.Println(string(txt))
 		fmt.Println("["+server.Name+"]", "["+kind+"]", "[END]")
 		if err != nil {
 			fmt.Println("tcpkali failed, check it is installed")
@@ -81,9 +83,9 @@ func Bench(host string, port int, count int, repeat int, dur string, msg string,
 		}
 		var rate float64
 		if outBuf.Len() > 0 {
-			buf.WriteString(outBuf.String())
+			buf.Write(txt)
 			buf.WriteString("\n")
-			rate = parseRate(outBuf.Bytes())
+			rate = parseRate(txt)
 		}
 		rates[server.Name] = rate
 	}
