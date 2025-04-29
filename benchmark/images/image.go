@@ -8,6 +8,7 @@ import (
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -29,6 +30,20 @@ func Draw(req Request) error {
 		Typeface: "Helvetica",
 		Variant:  "Serif",
 	}
+
+	slices.SortFunc[[]Item](req.Items, func(a, b Item) int {
+		n := a.Value - b.Value
+		if n < 0 {
+			return -1
+		}
+		if n > 0 {
+			return 1
+		}
+		return 0
+	})
+
+	slices.Reverse[[]Item](req.Items)
+
 	var groups []plotter.Values
 	for _, item := range req.Items {
 		groups = append(groups, plotter.Values{item.Value})

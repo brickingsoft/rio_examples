@@ -3,10 +3,14 @@ package srv_rio
 import (
 	"fmt"
 	"github.com/brickingsoft/rio"
+	"github.com/brickingsoft/rio/pkg/liburing/aio"
 	"net"
 )
 
 func Serve(port int) {
+	rio.Preset(
+		aio.WithWaitCQETimeoutCurve(aio.LCurve),
+	)
 	ln, lnErr := rio.Listen("tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		panic(lnErr)
@@ -23,12 +27,12 @@ func Serve(port int) {
 				for {
 					rn, rErr := conn.Read(packet[:])
 					if rErr != nil {
-						conn.Close()
+						_ = conn.Close()
 						return
 					}
 					_, wEr := conn.Write(packet[:rn])
 					if wEr != nil {
-						conn.Close()
+						_ = conn.Close()
 						return
 					}
 				}

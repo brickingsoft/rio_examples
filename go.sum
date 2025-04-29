@@ -11,8 +11,8 @@ github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b h1:slYM766cy2nI3BwyR
 github.com/ajstarks/svgo v0.0.0-20211024235047-1546f124cd8b/go.mod h1:1KcenG0jGWcpt8ov532z81sp/kMMUG485J2InIOyADM=
 github.com/andybalholm/brotli v1.1.1 h1:PR2pgnyFznKEugtsUo0xLdDop5SKXd5Qf5ysW+7XdTA=
 github.com/andybalholm/brotli v1.1.1/go.mod h1:05ib4cKhjx3OQYUY22hTVd34Bc8upXjOLL2rKwwZBoA=
-github.com/brickingsoft/rio v1.5.13 h1:zDmCsZ3Y6X5YtPaIX/5ttHPFStwmsuuAF6WwISUih/Q=
-github.com/brickingsoft/rio v1.5.13/go.mod h1:ZlUujJqjgkl78CWeV97fPavCW4PJx6gG1WqkSXejY9s=
+github.com/brickingsoft/rio v1.6.0 h1:eEQq7u9hhCmBxPCQebUqjhi8Z6TxC2EsNtVaBVAD6FE=
+github.com/brickingsoft/rio v1.6.0/go.mod h1:ZlUujJqjgkl78CWeV97fPavCW4PJx6gG1WqkSXejY9s=
 github.com/campoy/embedmd v1.0.0 h1:V4kI2qTJJLf4J29RzI/MAt2c3Bl4dQSYPuflzwFH2hY=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

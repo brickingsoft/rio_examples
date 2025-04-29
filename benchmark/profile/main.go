@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/brickingsoft/rio"
-	"github.com/brickingsoft/rio/pkg/iouring/aio"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
@@ -17,22 +18,19 @@ import (
 
 func main() {
 	var port int
-	var flagsSchema string
-	var autoInstallFixedFd bool
-	var multishotAccept bool
-	var reusePort bool
 	var count int
 	var repeat int
 	var out string
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.StringVar(&flagsSchema, "schema", aio.DefaultFlagsSchema, "iouring schema")
-	flag.BoolVar(&autoInstallFixedFd, "auto", false, "auto install fixed fd")
-	flag.BoolVar(&multishotAccept, "ma", false, "multi-accept")
-	flag.BoolVar(&reusePort, "reuse", false, "reuse port")
 	flag.IntVar(&count, "count", 50, "count")
 	flag.IntVar(&repeat, "repeat", 1000, "repeat")
 	flag.StringVar(&out, "out", "", "out directory")
 	flag.Parse()
+
+	//rio.Preset(aio.WithWaitCQETimeoutCurve(aio.Curve{{N: 1, Timeout: 50 * time.Microsecond}}))
+	//rio.Preset(aio.WithNAPIBusyPollTimeout(50 * time.Microsecond))
+	//rio.Preset(aio.WithMultishotDisabled(true))
+	//rio.Preset(aio.WithFlags(liburing.IORING_SETUP_SQPOLL | liburing.IORING_SETUP_SQ_AFF | liburing.IORING_SETUP_REGISTERED_FD_ONLY))
 
 	if out == "" {
 		out = "./benchmark/out"
@@ -62,20 +60,11 @@ func main() {
 	// 写入 Goroutine 分析数据
 	defer pprof.Lookup("goroutine").WriteTo(goroutineFile, 0)
 
-	rio.Presets(
-		aio.WithFlagsSchema(flagsSchema),
-		aio.WithPrepSQEBatchTimeWindow(200*time.Microsecond),
-	)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	config := rio.ListenConfig{
-		ReusePort:          reusePort,
-		SendZC:             false,
-		MultishotAccept:    multishotAccept,
-		AutoFixedFdInstall: autoInstallFixedFd,
-	}
+	config := rio.ListenConfig{}
+	//config := net.ListenConfig{}
 	ln, lnErr := config.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		fmt.Println("lnErr:", lnErr)
@@ -84,8 +73,9 @@ func main() {
 	defer ln.Close()
 	go listen(ln)
 
+	now := time.Now()
 	dial(fmt.Sprintf("127.0.0.1:%d", port), count, repeat)
-	fmt.Println("done!!")
+	fmt.Println("done!!", time.Since(now))
 }
 
 func listen(ln net.Listener) {
@@ -99,10 +89,15 @@ func listen(ln net.Listener) {
 			for {
 				rn, readErr := conn.Read(b)
 				if readErr != nil {
+					if errors.Is(readErr, io.EOF) {
+						break
+					}
+					fmt.Println("[srv][read]:", readErr)
 					break
 				}
 				_, writeErr := conn.Write(b[:rn])
 				if writeErr != nil {
+					fmt.Println("[srv][write]:", writeErr)
 					break
 				}
 			}
@@ -118,8 +113,14 @@ func dial(address string, count int, repeat int) {
 	for i := 0; i < count; i++ {
 		go func(wg *sync.WaitGroup, address string, repeat int) {
 			defer wg.Done()
-			conn, dialErr := rio.DialTimeout("tcp", address, 5*time.Second)
+			dialer := rio.Dialer{
+				Timeout:  5 * time.Second,
+				Deadline: time.Time{},
+			}
+			//dialer := net.Dialer{}
+			conn, dialErr := dialer.Dial("tcp", address)
 			if dialErr != nil {
+				fmt.Println("dialErr:", dialErr)
 				return
 			}
 			defer conn.Close()
@@ -127,12 +128,19 @@ func dial(address string, count int, repeat int) {
 			for j := 0; j < repeat; j++ {
 				_, writeErr := conn.Write(b)
 				if writeErr != nil {
+					fmt.Println("[cli][write]:", writeErr)
 					break
 				}
+				//fmt.Println("[cli][write]:", wn)
 				_, readErr := conn.Read(b)
 				if readErr != nil {
+					if errors.Is(readErr, io.EOF) {
+						break
+					}
+					fmt.Println("[cli][read]:", readErr)
 					break
 				}
+				//fmt.Println("[cli][read]:", rn)
 			}
 		}(wg, address, repeat)
 	}

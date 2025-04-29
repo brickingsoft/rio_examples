@@ -3,6 +3,7 @@
 ## Required tools
 
 - [tcpkali](https://github.com/ssinyagin/tcpkali-debian) 
+- [k6](https://grafana.com/docs/k6/latest/)
 
 ## Usage 
 
@@ -11,24 +12,28 @@
 bo build -o benchmark
 ```
 
-### TCPKALI
+### TCP
 choose a server machine to run, host such as 192.168.100.120.
 
 ```shell
-./benchmark --mode=server
+./benchmark --kind=tcp --mode=server
 ```
 
 choose a client machine to run, host such as 192.168.100.121.
 
 ```shell
-./benchmark --mode=tcpkali --host=192.168.100.120 --time=10s --count=50 --out=.
-```
-```shell
-./benchmark --mode=tcpkali --host=192.168.100.120 --repeat=5000 --count=50 --out=.
+./benchmark --kind=tcp --mode=client --host=192.168.100.120 --out=.
 ```
 
-### Local
+### HTTP
+choose a server machine to run, host such as 192.168.100.120.
 
 ```shell
-./benchmark --mode=local
+./benchmark --kind=http --mode=server
+```
+
+choose a client machine to run, host such as 192.168.100.121.
+
+```shell
+./benchmark --kind=http --mode=client --host=192.168.100.120 --out=.
 ```

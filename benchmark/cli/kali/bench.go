@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/brickingsoft/rio_examples/benchmark/images"
+	"github.com/brickingsoft/rio_examples/benchmark/srv"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,7 +14,7 @@ import (
 	"time"
 )
 
-func Bench(host string, port int, count int, repeat int, dur string, msg string, out string) {
+func Bench(host string, port int, count int, repeat int, dur string, out string) {
 	if host == "" || port < 1 {
 		fmt.Println("tcpkali: host and port are required")
 		return
@@ -42,7 +43,7 @@ func Bench(host string, port int, count int, repeat int, dur string, msg string,
 	rates := make(map[string]float64)
 
 	buf := new(bytes.Buffer)
-	for _, server := range servers {
+	for _, server := range srv.TcpServers {
 		port++
 
 		buf.WriteString("------" + server.Name + "------\n")
@@ -54,7 +55,7 @@ func Bench(host string, port int, count int, repeat int, dur string, msg string,
 				"--workers", "1",
 				"-c", strconv.Itoa(count),
 				"-r", strconv.Itoa(repeat),
-				"-m", fmt.Sprintf("\"%s\"", msg),
+				"-m", fmt.Sprintf("\"%s\"", "PING"),
 				fmt.Sprintf("%s:%d", host, port),
 			)
 		} else {
@@ -63,7 +64,7 @@ func Bench(host string, port int, count int, repeat int, dur string, msg string,
 				"--workers", "1",
 				"-c", strconv.Itoa(count),
 				"-T", d.String(),
-				"-m", fmt.Sprintf("\"%s\"", msg),
+				"-m", fmt.Sprintf("\"%s\"", "PING"),
 				fmt.Sprintf("%s:%d", host, port),
 			)
 		}
@@ -98,7 +99,7 @@ func Bench(host string, port int, count int, repeat int, dur string, msg string,
 	req := images.Request{
 		Path:  filepath.Join(out, fmt.Sprintf("benchmark_tcpkali_%s.png", kind)),
 		Title: fmt.Sprintf("Benchmark(%s)", kind),
-		Label: "req/s",
+		Label: "pps",
 		Items: make([]images.Item, 0, 1),
 	}
 	for title, rate := range rates {

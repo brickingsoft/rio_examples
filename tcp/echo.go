@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"flag"
 	"fmt"
 	"github.com/brickingsoft/rio"
-	"github.com/brickingsoft/rio/pkg/iouring/aio"
 	"io"
 	"net"
 	"time"
@@ -14,28 +12,10 @@ import (
 
 func main() {
 	var port int
-	var flagsSchema string
-	var autoInstallFixedFd bool
-	var multishotAccept bool
-	var reusePort bool
 	flag.IntVar(&port, "port", 9000, "server port")
-	flag.StringVar(&flagsSchema, "schema", aio.DefaultFlagsSchema, "iouring schema")
-	flag.BoolVar(&autoInstallFixedFd, "auto", false, "auto install fixed fd")
-	flag.BoolVar(&multishotAccept, "ma", false, "multi-accept")
-	flag.BoolVar(&reusePort, "reuse", false, "reuse port")
 	flag.Parse()
 
-	rio.Presets(aio.WithFlagsSchema(flagsSchema))
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	config := rio.ListenConfig{
-		ReusePort:          reusePort,
-		SendZC:             false,
-		MultishotAccept:    multishotAccept,
-		AutoFixedFdInstall: autoInstallFixedFd,
-	}
-	ln, lnErr := config.Listen(ctx, "tcp", fmt.Sprintf(":%d", port))
+	ln, lnErr := rio.Listen("tcp", fmt.Sprintf(":%d", port))
 	if lnErr != nil {
 		fmt.Println("lnErr:", lnErr)
 		return
