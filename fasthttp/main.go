@@ -1,11 +1,17 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/brickingsoft/rio"
 	"github.com/brickingsoft/rio/pkg/liburing/aio"
 	"github.com/valyala/fasthttp"
+	"io"
+	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -21,13 +27,33 @@ func main() {
 		panic(err)
 		return
 	}
-	srvErr := fasthttp.Serve(ln, func(ctx *fasthttp.RequestCtx) {
-		ctx.SetContentType("text/html; charset=utf-8")
-		ctx.SetStatusCode(200)
-		_, _ = ctx.WriteString("hello world")
-	})
-	if srvErr != nil {
-		panic(srvErr)
-		return
+
+	srv := &fasthttp.Server{
+		Handler: func(ctx *fasthttp.RequestCtx) {
+			ctx.SetContentType("text/html; charset=utf-8")
+			ctx.SetStatusCode(200)
+			_, _ = ctx.WriteString("hello world")
+		},
 	}
+	done := make(chan struct{}, 1)
+	go func(ln net.Listener, srv *fasthttp.Server, done chan<- struct{}) {
+		if srvErr := srv.Serve(ln); srvErr != nil {
+			if errors.Is(srvErr, io.EOF) {
+				close(done)
+				return
+			}
+			panic(srvErr)
+			return
+		}
+		close(done)
+	}(ln, srv, done)
+
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGABRT, syscall.SIGTERM)
+	<-signalCh
+
+	if shutdownErr := srv.Shutdown(); shutdownErr != nil {
+		panic(shutdownErr)
+	}
+	<-done
 }
