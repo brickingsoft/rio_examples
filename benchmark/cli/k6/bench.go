@@ -85,7 +85,7 @@ func parseRate(b []byte) (v float64) {
 		}
 		ls := strings.TrimSpace(string(line))
 		if strings.HasPrefix(ls, "http_reqs") {
-			rate, rateErr := strconv.ParseFloat(strings.Split(strings.Split(ls, ": ")[1], " ")[0], 64)
+			rate, rateErr := strconv.ParseFloat(strings.Split(strings.Split(strings.Split(ls, ": ")[1], " ")[1], "/")[0], 64)
 			if rateErr != nil {
 				fmt.Println("parse rate failed:", rateErr)
 			}
