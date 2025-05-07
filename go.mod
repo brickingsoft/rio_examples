@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	github.com/aacfactory/afssl v1.12.0
-	github.com/brickingsoft/rio v1.6.7
+	github.com/brickingsoft/rio v1.6.8
 	github.com/panjf2000/gnet/v2 v2.7.2
 	github.com/tidwall/evio v1.0.8
 	github.com/valyala/fasthttp v1.62.0

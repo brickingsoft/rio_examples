@@ -21,6 +21,8 @@ func main() {
 	flag.Parse()
 	rio.Preset(
 		aio.WithNAPIBusyPollTimeout(time.Microsecond * 50),
+		//aio.WithWaitCQETimeoutCurve(aio.LCurve),
+		//aio.WithFlags(liburing.IORING_SETUP_SQPOLL|liburing.IORING_SETUP_SQ_AFF|liburing.IORING_SETUP_REGISTERED_FD_ONLY),
 	)
 	ln, err := rio.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
