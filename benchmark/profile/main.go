@@ -31,6 +31,8 @@ func main() {
 	//rio.Preset(aio.WithNAPIBusyPollTimeout(50 * time.Microsecond))
 	//rio.Preset(aio.WithMultishotDisabled(true))
 	//rio.Preset(aio.WithFlags(liburing.IORING_SETUP_SQPOLL | liburing.IORING_SETUP_SQ_AFF | liburing.IORING_SETUP_REGISTERED_FD_ONLY))
+	//rio.Preset(aio.WithWaitCQETimeoutCurve(aio.LCurve))
+	//rio.Preset(aio.WithFlags(liburing.IORING_SETUP_REGISTERED_FD_ONLY))
 
 	if out == "" {
 		out = "./benchmark/out"

@@ -17,9 +17,9 @@ func main() {
 		out  string
 	)
 	flag.StringVar(&host, "srv-host", "192.168.100.120", "server host")
-	flag.IntVar(&port, "port", 9000, "server base port")
-	flag.StringVar(&kind, "kind", "http", "tcp or http")
-	flag.StringVar(&mode, "mode", "client", "client: use tcpkali and wrk to bench, server: run tcp and http server")
+	flag.IntVar(&port, "port", 0, "server base port")
+	flag.StringVar(&kind, "kind", "", "tcp or http")
+	flag.StringVar(&mode, "mode", "", "client: use tcpkali and wrk to bench, server: run tcp and http server")
 	flag.StringVar(&out, "out", "", "result output dir")
 	flag.Parse()
 
