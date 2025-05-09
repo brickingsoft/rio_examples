@@ -4,14 +4,14 @@ go 1.23.0
 
 require (
 	github.com/aacfactory/afssl v1.12.0
-	github.com/brickingsoft/rio v1.6.8
+	github.com/brickingsoft/rio v1.6.10
 	github.com/panjf2000/gnet/v2 v2.7.2
 	github.com/tidwall/evio v1.0.8
 	github.com/valyala/fasthttp v1.62.0
 	gonum.org/v1/plot v0.15.0
 )
 
-//replace github.com/brickingsoft/rio v1.6.7 => ../rio
+//replace github.com/brickingsoft/rio v1.6.10 => ../rio
 
 require (
 	git.sr.ht/~sbinet/gg v0.6.0 // indirect
